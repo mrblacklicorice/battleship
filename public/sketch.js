@@ -97,7 +97,6 @@ document.addEventListener("DOMContentLoaded", async event => {
 
         if (gamemode == 0 && myData["state"] == "POST") {
             tiles[myData["coord"] % cols][Math.floor(myData["coord"] / rows)].click(myData["hit"]);
-            console.log(myData["hit"]);
             consoleText = "You " + ((myData["hit"] == true) ? "hit" : "miss");
 
             if (myData["hit"] && myData["ship"] != -1) {
