@@ -24,17 +24,18 @@ var ships = [true, true, true, true, true];
 var shipLengths = [5, 4, 3, 3, 2];
 var shipOrientation = [1, 1, 1, 1, 0]; // 0 horizontal, 1 vertical
 var shipsIndicies = [[-1, -1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1]];
+var shipNames = ["Carrier", "Battleship", "Cruiser", "Submarine", "Destroyer"];
 var currentShip = -1;
 
 var gamemode = -2;
 // -2 connect with player, -1 place ships, 0 shoot, 1 game over
 
 var board = 0; // 0 player, 1 opponent
-var turn = host; // 0 player, 1 opponent
+var turn = host;
 
 var gameData = { "host": true, "guest": false, "hostWon": null };
-var myData = { "coord": -1, "hit": false, "ship": -1 };
-var oppoData = { "coord": -1, "hit": false, "ship": -1 };
+var myData = { "coord": -1, "hit": false, "ship": -1, "state": null }; // state = GET, POST. 
+var oppoData = { "coord": -1, "hit": false, "ship": -1, "state": null };
 // firebase data
 
 
@@ -82,6 +83,10 @@ document.addEventListener("DOMContentLoaded", async event => {
                 gamemode = 0;
                 ships = [true, true, true, true, true];
             }
+        } else if (gamemode == 0) {
+            if (gameData["hostWon"] != null) {
+                gamemode = 1;
+            }
         }
     }, err => {
         console.log(`Encountered error: ${err}`);
@@ -90,10 +95,13 @@ document.addEventListener("DOMContentLoaded", async event => {
     myRef.onSnapshot(async docSnapshot => {
         myData = docSnapshot.data();
 
-        if (gamemode == 0 && !turn) {
+        if (gamemode == 0 && myData["state"] == "POST") {
             tiles[myData["coord"] % cols][Math.floor(myData["coord"] / rows)].click(myData["hit"]);
+            consoleText = "You " + myData["hit"] ? "Hit" : "Miss";
+
             if (myData["hit"] && myData["ship"] != -1) {
                 ships[myData["ship"]] = false;
+                consoleText += " and you sunk the " + shipNames[myData["ship"]];
 
                 if (ships.every(ship => !ship)) {
                     gamemode = 1;
@@ -108,8 +116,7 @@ document.addEventListener("DOMContentLoaded", async event => {
     oppoRef.onSnapshot(async docSnapshot => {
         oppoData = docSnapshot.data();
 
-        if (gamemode == 0 && !turn) {
-            console.log("here");
+        if (gamemode == 0 && oppoData["state"] == "GET") {
             tiles[oppoData["coord"] % cols][Math.floor(oppoData["coord"] / rows)].hit = true;
             var s = tiles[oppoData["coord"] % cols][Math.floor(oppoData["coord"] / rows)].s;
 
@@ -121,10 +128,12 @@ document.addEventListener("DOMContentLoaded", async event => {
                     }
                 }
 
-                await oppoRef.update({ "hit": true, "ship": ((shipsIndicies[s].every(s => (s == -1)) ? s : -1)) });
+                await oppoRef.update({ "hit": true, "ship": ((shipsIndicies[s].every(s => (s == -1)) ? s : -1)), "state": "POST" });
+                consoleText = "They hit" + ((shipsIndicies[s].every(s => (s == -1)) ? " and they sunk the " + shipNames[s] : ""));
             } else {
 
-                await oppoRef.update({ "hit": false, "ship": -1 });
+                await oppoRef.update({ "hit": false, "ship": -1, "state": "POST" });
+                consoleText = "They missed";
             }
 
             turn = true;
@@ -199,12 +208,13 @@ function draw() {
     } else if (gamemode == 0) {
         var index = hoverGrid(mouseX, mouseY);
 
-        if (index != -1) {
+        if (index != -1 && turn && board == 0) {
             stroke('#222222');
             strokeWeight(2);
             noFill();
             rect(pixel * (index % cols), pixel * Math.floor(index / rows), pixel, pixel);
         }
+
     }
 
 
@@ -250,6 +260,20 @@ function draw() {
             }
 
             text(consoleText, offset, pixel * rows + (offset * 6));
+        } else if (gamemode == 1) {
+            if (gameData["hostWon"] != null) {
+                textAlign(CENTER, CENTER);
+                fill('#ffe9e3');
+                noStroke();
+
+                textSize((cols * rows * pixel * pixel) * 0.0001);
+
+                if (gameData["hostWon"] == host) {
+                    text(`You won!`, offset, pixel * rows + (offset * 3));
+                } else {
+                    text(`You lost!`, offset, pixel * rows + (offset * 3));
+                }
+            }
         }
     }
 
@@ -292,7 +316,6 @@ function draw() {
         fill((board == 0) ? "#316879" : "#f47a60");
         text((board == 0) ? "SELF" : "PL 2", (canvas.width - pixel * 3) / 2 + (pixel * 3 / 2), canvas.height - (offset * 7) + (pixel * 1.25 / 2));
     }
-    // console.log(hoverShips(mouseX, mouseY));
 }
 
 function makeid() {
@@ -375,7 +398,7 @@ async function mousePressed() {
             if (board == 0 && turn) {
                 var index = hoverGrid(mouseX, mouseY);
                 if (index != -1 && tiles[index % cols][Math.floor(index / rows)].c == -1) {
-                    await myRef.update({ "coord": index });
+                    await myRef.update({ "coord": index, state: "GET" });
                     turn = false;
                 }
             }

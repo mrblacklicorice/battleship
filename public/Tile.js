@@ -40,7 +40,6 @@ class Tile {
 
     showPhantomMissiles = () => {
         if (this.hit) {
-            console.log(this.hit);
             if (this.s != -1) {
                 fill("#f47a60");
                 noStroke();
