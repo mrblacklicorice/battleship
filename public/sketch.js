@@ -313,7 +313,18 @@ function draw() {
         }
     }
 
-    if (ships.every(ele => ele == false) && currentShip == -1 && gamemode == -1 && !gameData[host ? "host" : "guest"]) {
+    if (gamemode == -2) {
+        noFill();
+        stroke('#ffe9e3');
+        strokeWeight(4);
+        rect((canvas.width - pixel * 5) / 2, canvas.height - (offset * 7), pixel * 5, pixel * 1.25);
+
+        textAlign(CENTER, CENTER);
+        textSize(offset * 4);
+        noStroke();
+        fill('#ffe9e3');
+        text(`COPY LINK`, (canvas.width - pixel * 3) / 2 + (pixel * 3 / 2), canvas.height - (offset * 7) + (pixel * 1.25 / 2));
+    } else if (ships.every(ele => ele == false) && currentShip == -1 && gamemode == -1 && !gameData[host ? "host" : "guest"]) {
         noFill();
         stroke('#ffe9e3');
         strokeWeight(4);
@@ -384,7 +395,9 @@ function hoverShips(mouse_X, mouse_Y) {
 
 async function mousePressed() {
     if (mouseButton == "left") {
-        if (gamemode == -1) {
+        if (gamemode == -2) {
+            navigator.clipboard.writeText("https://battleship-53140.web.app/?g=" + gamecode);
+        } else if (gamemode == -1) {
             var index = hoverShips(mouseX, mouseY);
             if (currentShip == -1) {
                 if (index != -1) {
