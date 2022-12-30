@@ -88,6 +88,23 @@ document.addEventListener("DOMContentLoaded", async event => {
             if (gameData["hostWon"] != null) {
                 gamemode = 1;
             }
+        } else if (gamemode == 1) {
+            if (gameData["hostWon"] == null) {
+                gamemode = -1;
+
+                ships = [true, true, true, true, true];
+                oppoShips = [true, true, true, true, true];
+                shipLengths = [5, 4, 3, 3, 2];
+                shipOrientation = [1, 1, 1, 1, 0]; // 0 horizontal, 1 vertical
+                shipsIndicies = [[-1, -1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1]];
+                board = 0;
+                turn = host;
+
+                setup();
+
+                myData = { "coord": -1, "hit": false, "ship": -1, "state": null };
+                oppoData = { "coord": -1, "hit": false, "ship": -1, "state": null };
+            }
         }
     }, err => {
         console.log(`Encountered error: ${err}`);
@@ -318,6 +335,17 @@ function draw() {
         noStroke();
         fill((board == 0) ? "#316879" : "#f47a60");
         text((board == 0) ? "SELF" : "PL 2", (canvas.width - pixel * 3) / 2 + (pixel * 3 / 2), canvas.height - (offset * 7) + (pixel * 1.25 / 2));
+    } else if (gamemode == 1) {
+        noFill();
+        stroke('#ffe9e3');
+        strokeWeight(4);
+        rect((canvas.width - pixel * 5) / 2, canvas.height - (offset * 7), pixel * 5, pixel * 1.25);
+
+        textAlign(CENTER, CENTER);
+        textSize(offset * 4);
+        noStroke();
+        fill('#ffe9e3');
+        text("PLAY AGAIN", (canvas.width - pixel * 3) / 2 + (pixel * 3 / 2), canvas.height - (offset * 7) + (pixel * 1.25 / 2));
     }
 }
 
@@ -408,6 +436,13 @@ async function mousePressed() {
 
             if (mouseX > (canvas.width - pixel * 3) / 2 && mouseX < (canvas.width - pixel * 3) / 2 + pixel * 3 && mouseY > canvas.height - (offset * 7) && mouseY < canvas.height - (offset * 7) + pixel * 1.25) {
                 board = (board + 1) % 2;
+            }
+        } else if (gamemode == 1) {
+            if (mouseX > (canvas.width - pixel * 5) / 2 && mouseX < (canvas.width - pixel * 5) / 2 + pixel * 5 && mouseY > canvas.height - (offset * 7) && mouseY < canvas.height - (offset * 7) + pixel * 1.25) {
+                console.log("reset");
+                await gameRef.update({ "hostWon": null });
+                await myRef.update({ "coord": -1, "hit": false, "ship": -1, "state": null });
+                await oppoRef.update({ "coord": -1, "hit": false, "ship": -1, "state": null });
             }
         }
     } else if (mouseButton == "right") {
