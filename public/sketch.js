@@ -21,6 +21,7 @@ var cols = 10;
 var tiles = [];
 
 var ships = [true, true, true, true, true];
+var oppoShips = [true, true, true, true, true];
 var shipLengths = [5, 4, 3, 3, 2];
 var shipOrientation = [1, 1, 1, 1, 0]; // 0 horizontal, 1 vertical
 var shipsIndicies = [[-1, -1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1]];
@@ -128,6 +129,8 @@ document.addEventListener("DOMContentLoaded", async event => {
                     }
                 }
 
+                if (shipsIndicies[s].every(s => (s == -1))) oppoShips[s] = false;
+
                 await oppoRef.update({ "hit": true, "ship": ((shipsIndicies[s].every(s => (s == -1)) ? s : -1)), "state": "POST" });
                 consoleText = "They hit" + ((shipsIndicies[s].every(s => (s == -1)) ? " and they sunk the " + shipNames[s] : ""));
             } else {
@@ -182,7 +185,7 @@ function draw() {
     }
 
     drawShipOutline();
-    drawShips();
+    (gamemode == 0 && board == 1) ? drawShips(oppoShips) : drawShips(ships);
 
 
     // fill('white');
@@ -262,7 +265,7 @@ function draw() {
             text(consoleText, offset, pixel * rows + (offset * 6));
         } else if (gamemode == 1) {
             if (gameData["hostWon"] != null) {
-                textAlign(CENTER, CENTER);
+                textAlign(LEFT, CENTER);
                 fill('#ffe9e3');
                 noStroke();
 
@@ -484,41 +487,41 @@ function updateShips(coord, ship) {
 }
 
 
-function drawShips() {
+function drawShips(ship) {
     strokeWeight(2);
     fill("#316879");
     stroke("#000000");
 
     // 5
-    if (ships[0]) {
+    if (ship[0]) {
         for (let i = 0; i < shipLengths[0]; i++) {
             rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2), ((pixel * 5) - ((pixel * 0.8 * 5))) / 2 + (pixel * 0.8 * i), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 4
-    if (ships[1]) {
+    if (ship[1]) {
         for (let i = 0; i < shipLengths[1]; i++) {
             rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2) + (side_bar * offset * 0.75), ((pixel * 5) - ((pixel * 0.8 * 4))) / 2 + (pixel * 0.8 * i), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 3
-    if (ships[2]) {
+    if (ship[2]) {
         for (let i = 0; i < shipLengths[2]; i++) {
             rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2), ((pixel * 3.5) - ((pixel * 0.8 * 3))) / 2 + (pixel * 0.8 * i) + (pixel * 5), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 3
-    if (ships[3]) {
+    if (ship[3]) {
         for (let i = 0; i < shipLengths[3]; i++) {
             rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2) + (side_bar * offset * 0.75), ((pixel * 3.5) - ((pixel * 0.8 * 3))) / 2 + (pixel * 0.8 * i) + (pixel * 5), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 2
-    if (ships[4]) {
+    if (ship[4]) {
         // center horizontally
         for (let i = 0; i < shipLengths[4]; i++) {
             rect(pixel * cols + (offset * 2) + ((side_bar * offset * 1.5) - (pixel * 2 * 0.8)) / 2 + (pixel * 0.8 * i), pixel * 8.5 + ((pixel * 1.5 - pixel * 0.8) / 2), pixel * 0.8, pixel * 0.8);
