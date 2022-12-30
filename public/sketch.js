@@ -313,7 +313,7 @@ function draw() {
         }
     }
 
-    if (gamemode == -2) {
+    if (gamemode == -2 && host) {
         noFill();
         stroke('#ffe9e3');
         strokeWeight(4);
@@ -395,7 +395,7 @@ function hoverShips(mouse_X, mouse_Y) {
 
 async function mousePressed() {
     if (mouseButton == "left") {
-        if (gamemode == -2) {
+        if (gamemode == -2 && host) {
             navigator.clipboard.writeText("https://battleship-53140.web.app/?g=" + gamecode);
         } else if (gamemode == -1) {
             var index = hoverShips(mouseX, mouseY);
