@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", async event => {
                 shipsIndicies = [[-1, -1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1], [-1, -1, -1], [-1, -1]];
                 board = 0;
                 turn = host;
+                consoleText = "";
 
                 setup();
 
