@@ -274,11 +274,8 @@ function draw() {
 
             textSize((cols * rows * pixel * pixel) * 0.0001);
 
-            if (turn) {
-                text(`Your turn`, offset, pixel * rows + (offset * 3));
-            } else {
-                text(`Opponent's turn`, offset, pixel * rows + (offset * 3));
-            }
+            text(((turn) ? "Your turn" : "Their turn"), offset, pixel * rows + (offset * 3));
+
 
             text(consoleText, offset, pixel * rows + (offset * 6));
         } else if (gamemode == 1) {
