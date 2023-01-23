@@ -8,15 +8,25 @@ var gamecode = URLparams.has("g") ? Number(URLparams.get("g")) : makeid();
 var host = !URLparams.has("g");
 // URLparams.has("g") ? false : true;
 
+let isMobileDevice = (/android|iphone|kindle|ipad/i).test(navigator.userAgent);
+
 var pixel = 45;
 
 var offset = pixel / 5;
 
-let side_bar = Math.floor(pixel / 4);
-
 var rows = 10;
 
 var cols = 10;
+
+if (isMobileDevice) {
+    if (window.orientation == 0 || window.orientation == 180)
+        pixel = Math.floor(pixel / ((pixel * cols + (offset * 2) + (offset * 9 * 1.5)) / document.documentElement.clientWidth));
+    else
+        pixel = Math.floor(pixel / ((pixel * rows + (offset * 2) + (offset * 15)) / document.documentElement.clientHeight));
+
+    console.log(pixel);
+    offset = pixel / 5;
+}
 
 var tiles = [];
 
@@ -166,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async event => {
 
 
 function setup() {
-    canvas = createCanvas(pixel * cols + (offset * 2) + (side_bar * offset * 1.5), pixel * rows + (offset * 2) + (offset * 15));
+    canvas = createCanvas(pixel * cols + (offset * 2) + (offset * 9 * 1.5), pixel * rows + (offset * 2) + (offset * 15));
 
 
     canvas.center("horizontal");
@@ -245,8 +255,7 @@ function draw() {
             textAlign(LEFT, CENTER);
             fill('#ffe9e3');
             noStroke();
-
-            textSize((cols * rows * pixel * pixel) * 0.0001);
+            textSize(pixel * 0.44);
 
             if (host) {
                 text(`Send code: ${gamecode} to partner`, offset, pixel * rows + (offset * 3));
@@ -257,14 +266,19 @@ function draw() {
             textAlign(LEFT, CENTER);
             fill('#ffe9e3');
             noStroke();
-
-            textSize((cols * rows * pixel * pixel) * 0.0001);
+            textSize(pixel * 0.44);
 
             if (ships.every(ele => ele == false) && currentShip == -1) {
                 text(`Click START to start`, offset, pixel * rows + (offset * 3));
             } else {
                 text(`Place all the ships to start`, offset, pixel * rows + (offset * 3));
-                text(`Left click to select and retract, right click to switch orientation`, offset, pixel * rows + (offset * 6));
+
+                if (isMobileDevice) {
+                    text(`Drag and drop the ships and tap empty slot to retract`, offset, pixel * rows + (offset * 6));
+                    text(`Tap the ship to switch orientation`, offset, pixel * rows + (offset * 9));
+                } else {
+                    text(`Left click to select and retract, right click to switch orientation`, offset, pixel * rows + (offset * 6));
+                }
             }
             // text(`Time: ${((grid.start == 0) ? timer_parser(0) : timer_parser(Date.now() - grid.start))}`, pixel * cols + (offset * 1), pixel * rows + (offset * 3));
         } else if (gamemode == 0) {
@@ -272,7 +286,7 @@ function draw() {
             fill('#ffe9e3');
             noStroke();
 
-            textSize((cols * rows * pixel * pixel) * 0.0001);
+            textSize(pixel * 0.44);
 
             text(((turn) ? "Your turn" : "Their turn"), offset, pixel * rows + (offset * 3));
 
@@ -314,7 +328,7 @@ function draw() {
     if (gamemode == -2 && host) {
         noFill();
         stroke('#ffe9e3');
-        strokeWeight(4);
+        strokeWeight(Math.floor(pixel / 10));
         rect((canvas.width - pixel * 5) / 2, canvas.height - (offset * 7), pixel * 5, pixel * 1.25);
 
         textAlign(CENTER, CENTER);
@@ -325,7 +339,7 @@ function draw() {
     } else if (ships.every(ele => ele == false) && currentShip == -1 && gamemode == -1 && !gameData[host ? "host" : "guest"]) {
         noFill();
         stroke('#ffe9e3');
-        strokeWeight(4);
+        strokeWeight(Math.floor(pixel / 10));
         rect((canvas.width - pixel * 3) / 2, canvas.height - (offset * 7), pixel * 3, pixel * 1.25);
 
         textAlign(CENTER, CENTER);
@@ -336,7 +350,7 @@ function draw() {
     } else if (gamemode == 0) {
         noFill();
         stroke((board == 0) ? "#316879" : "#f47a60");
-        strokeWeight(4);
+        strokeWeight(Math.floor(pixel / 10));
         rect((canvas.width - pixel * 3) / 2, canvas.height - (offset * 7), pixel * 3, pixel * 1.25);
 
         textAlign(CENTER, CENTER);
@@ -347,7 +361,7 @@ function draw() {
     } else if (gamemode == 1) {
         noFill();
         stroke('#ffe9e3');
-        strokeWeight(4);
+        strokeWeight(Math.floor(pixel / 10));
         rect((canvas.width - pixel * 5) / 2, canvas.height - (offset * 7), pixel * 5, pixel * 1.25);
 
         textAlign(CENTER, CENTER);
@@ -374,17 +388,17 @@ function hoverGrid(mouse_X, mouse_Y) {
 
 function hoverShips(mouse_X, mouse_Y) {
     // return index of the ship the mouse is hovering over
-    if (mouse_X > pixel * cols + (offset * 2) && mouse_X < pixel * cols + (offset * 2) + (side_bar * offset * 0.75) && mouse_Y > 0 && mouse_Y < pixel * 5)
+    if (mouse_X > pixel * cols + (offset * 2) && mouse_X < pixel * cols + (offset * 2) + (offset * 9 * 0.75) && mouse_Y > 0 && mouse_Y < pixel * 5)
         return 0;
-    else if (mouse_X > pixel * cols + (offset * 2) + (side_bar * offset * 0.75) && mouse_X < pixel * cols + (offset * 2) + (side_bar * offset * 1.5) && mouse_Y > 0 && mouse_Y < pixel * 5)
+    else if (mouse_X > pixel * cols + (offset * 2) + (offset * 9 * 0.75) && mouse_X < pixel * cols + (offset * 2) + (offset * 9 * 1.5) && mouse_Y > 0 && mouse_Y < pixel * 5)
         return 1;
-    else if (mouse_X > pixel * cols + (offset * 2) && mouse_X < pixel * cols + (offset * 2) + (side_bar * offset * 0.75) && mouse_Y > pixel * 5 && mouse_Y < pixel * 8.5)
+    else if (mouse_X > pixel * cols + (offset * 2) && mouse_X < pixel * cols + (offset * 2) + (offset * 9 * 0.75) && mouse_Y > pixel * 5 && mouse_Y < pixel * 8.5)
         return 2;
-    else if (mouse_X > pixel * cols + (offset * 2) + (side_bar * offset * 0.75) && mouse_X < pixel * cols + (offset * 2) + (side_bar * offset * 1.5) && mouse_Y > pixel * 5 && mouse_Y < pixel * 8.5)
+    else if (mouse_X > pixel * cols + (offset * 2) + (offset * 9 * 0.75) && mouse_X < pixel * cols + (offset * 2) + (offset * 9 * 1.5) && mouse_Y > pixel * 5 && mouse_Y < pixel * 8.5)
         return 3;
     else if (
         // pixel * cols + (offset * 2), pixel * 8.5, (side_bar * offset * 1.5), pixel * 1.5
-        mouse_X > pixel * cols + (offset * 2) && mouse_X < pixel * cols + (offset * 2) + (side_bar * offset * 1.5) && mouse_Y > pixel * 8.5 && mouse_Y < pixel * 10
+        mouse_X > pixel * cols + (offset * 2) && mouse_X < pixel * cols + (offset * 2) + (offset * 9 * 1.5) && mouse_Y > pixel * 8.5 && mouse_Y < pixel * 10
     )
         return 4;
     else
@@ -395,7 +409,7 @@ async function mousePressed() {
     if (mouseButton == "left") {
         if (gamemode == -2 && host) {
             navigator.clipboard.writeText("https://battleship-53140.web.app/?g=" + gamecode);
-        } else if (gamemode == -1) {
+        } else if (gamemode == -1 && !isMobileDevice) {
             var index = hoverShips(mouseX, mouseY);
             if (currentShip == -1) {
                 if (index != -1) {
@@ -460,6 +474,80 @@ async function mousePressed() {
         if (gamemode == -1) {
             if (currentShip != -1) {
                 shipOrientation[currentShip] = (shipOrientation[currentShip] + 1) % 2;
+            }
+        }
+    }
+}
+
+async function touchStarted(e) {
+    if (e.type == "touchstart") {
+        if (gamemode == -1 && isMobileDevice) {
+            var index = hoverShips(mouseX, mouseY);
+            var gi = hoverGrid(mouseX, mouseY);
+            if (currentShip == -1) {
+                if (index != -1) {
+                    if (ships[index]) {
+                        currentShip = index;
+                        ships[index] = false;
+                    } else {
+                        for (let i = 0; i < shipsIndicies[index].length; i++) {
+                            tiles[shipsIndicies[index][i] % cols][Math.floor(shipsIndicies[index][i] / rows)].s = -1;
+                            shipsIndicies[index][i] = -1;
+                        }
+                        ships[index] = true;
+                        shipOrientation[index] = (index == 4) ? 0 : 1;
+                    }
+                } else if (gi != -1) {
+                    // switch orientation
+                    if (tiles[gi % cols][Math.floor(gi / rows)].s != -1) {
+                        currentShip = tiles[gi % cols][Math.floor(gi / rows)].s;
+                        gi = shipsIndicies[currentShip][Math.floor(shipsIndicies[currentShip].length / 2)];
+                        var check = checkShips(gi, currentShip);
+
+                        if (check != -1 && updateShips(check, currentShip)) {
+
+                        }
+                        shipOrientation[ship] = (shipOrientation[ship] + 1) % 2;
+
+                        for (let i = 0; i < shipsIndicies[ship].length; i++) {
+                            tiles[shipsIndicies[ship][i] % cols][Math.floor(shipsIndicies[ship][i] / rows)].s = -1;
+                            shipsIndicies[ship][i] = -1;
+                        }
+                        ships[index] = true;
+
+                        var check = checkShips(gi, currentShip);
+
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+async function touchEnded(e) {
+    if (e.type == "touchend" && gamemode == -1 && isMobileDevice) {
+
+        if (currentShip != -1) {
+            var gi = hoverGrid(mouseX, mouseY);
+            var check = checkShips(gi, currentShip);
+            if (gi != -1 && check != -1 && updateShips(check, currentShip)) {
+                currentShip = -1;
+            } else {
+                ships[currentShip] = true;
+                shipOrientation[currentShip] = (currentShip == 4) ? 0 : 1;
+                currentShip = -1;
+            }
+        }
+
+        if (ships.every(ele => ele == false)) {
+            if (mouseX > (canvas.width - pixel * 3) / 2 && mouseX < (canvas.width - pixel * 3) / 2 + pixel * 3 && mouseY > canvas.height - (offset * 7) && mouseY < canvas.height - (offset * 7) + pixel * 1.25) {
+                if (host) await gameRef.update({ "host": true });
+                else await gameRef.update({ "guest": true });
+                console.log("start");
+                console.log(shipsIndicies);
+                console.log(ships);
+                console.log(shipOrientation);
             }
         }
     }
@@ -532,7 +620,6 @@ function updateShips(coord, ship) {
     return true;
 }
 
-
 function drawShips(ship) {
     strokeWeight(2);
     fill("#316879");
@@ -541,28 +628,28 @@ function drawShips(ship) {
     // 5
     if (ship[0]) {
         for (let i = 0; i < shipLengths[0]; i++) {
-            rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2), ((pixel * 5) - ((pixel * 0.8 * 5))) / 2 + (pixel * 0.8 * i), pixel * 0.8, pixel * 0.8);
+            rect(pixel * cols + (offset * 2) + (offset * 9 * 0.375) - (pixel * 0.8 / 2), ((pixel * 5) - ((pixel * 0.8 * 5))) / 2 + (pixel * 0.8 * i), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 4
     if (ship[1]) {
         for (let i = 0; i < shipLengths[1]; i++) {
-            rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2) + (side_bar * offset * 0.75), ((pixel * 5) - ((pixel * 0.8 * 4))) / 2 + (pixel * 0.8 * i), pixel * 0.8, pixel * 0.8);
+            rect(pixel * cols + (offset * 2) + (offset * 9 * 0.375) - (pixel * 0.8 / 2) + (offset * 9 * 0.75), ((pixel * 5) - ((pixel * 0.8 * 4))) / 2 + (pixel * 0.8 * i), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 3
     if (ship[2]) {
         for (let i = 0; i < shipLengths[2]; i++) {
-            rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2), ((pixel * 3.5) - ((pixel * 0.8 * 3))) / 2 + (pixel * 0.8 * i) + (pixel * 5), pixel * 0.8, pixel * 0.8);
+            rect(pixel * cols + (offset * 2) + (offset * 9 * 0.375) - (pixel * 0.8 / 2), ((pixel * 3.5) - ((pixel * 0.8 * 3))) / 2 + (pixel * 0.8 * i) + (pixel * 5), pixel * 0.8, pixel * 0.8);
         }
     }
 
     // 3
     if (ship[3]) {
         for (let i = 0; i < shipLengths[3]; i++) {
-            rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.375) - (pixel * 0.8 / 2) + (side_bar * offset * 0.75), ((pixel * 3.5) - ((pixel * 0.8 * 3))) / 2 + (pixel * 0.8 * i) + (pixel * 5), pixel * 0.8, pixel * 0.8);
+            rect(pixel * cols + (offset * 2) + (offset * 9 * 0.375) - (pixel * 0.8 / 2) + (offset * 9 * 0.75), ((pixel * 3.5) - ((pixel * 0.8 * 3))) / 2 + (pixel * 0.8 * i) + (pixel * 5), pixel * 0.8, pixel * 0.8);
         }
     }
 
@@ -570,7 +657,7 @@ function drawShips(ship) {
     if (ship[4]) {
         // center horizontally
         for (let i = 0; i < shipLengths[4]; i++) {
-            rect(pixel * cols + (offset * 2) + ((side_bar * offset * 1.5) - (pixel * 2 * 0.8)) / 2 + (pixel * 0.8 * i), pixel * 8.5 + ((pixel * 1.5 - pixel * 0.8) / 2), pixel * 0.8, pixel * 0.8);
+            rect(pixel * cols + (offset * 2) + ((offset * 9 * 1.5) - (pixel * 2 * 0.8)) / 2 + (pixel * 0.8 * i), pixel * 8.5 + ((pixel * 1.5 - pixel * 0.8) / 2), pixel * 0.8, pixel * 0.8);
         }
     }
 }
@@ -581,17 +668,17 @@ function drawShipOutline() {
     stroke('#316879');
 
     // 5
-    rect(pixel * cols + (offset * 2), 0, (side_bar * offset * 0.75), pixel * 5);
+    rect(pixel * cols + (offset * 2), 0, (offset * 9 * 0.75), pixel * 5);
 
     // 4 
-    rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.75), 0, (side_bar * offset * 0.75), pixel * 5);
+    rect(pixel * cols + (offset * 2) + (offset * 9 * 0.75), 0, (offset * 9 * 0.75), pixel * 5);
 
     // 3
-    rect(pixel * cols + (offset * 2), pixel * 5, (side_bar * offset * 0.75), pixel * 3.5);
+    rect(pixel * cols + (offset * 2), pixel * 5, (offset * 9 * 0.75), pixel * 3.5);
 
     // 3
-    rect(pixel * cols + (offset * 2) + (side_bar * offset * 0.75), pixel * 5, (side_bar * offset * 0.75), pixel * 3.5);
+    rect(pixel * cols + (offset * 2) + (offset * 9 * 0.75), pixel * 5, (offset * 9 * 0.75), pixel * 3.5);
 
     // 2
-    rect(pixel * cols + (offset * 2), pixel * 8.5, (side_bar * offset * 1.5), pixel * 1.5);
+    rect(pixel * cols + (offset * 2), pixel * 8.5, (offset * 9 * 1.5), pixel * 1.5);
 }
