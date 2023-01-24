@@ -28,6 +28,8 @@ if (isMobileDevice) {
     offset = pixel / 5;
 }
 
+var mX = -1, mY = -1;
+
 var tiles = [];
 
 var ships = [true, true, true, true, true];
@@ -275,7 +277,7 @@ function draw() {
 
                 if (isMobileDevice) {
                     text(`Drag and drop the ships and tap empty slot to retract`, offset, pixel * rows + (offset * 6));
-                    text(`Tap the ship to switch orientation`, offset, pixel * rows + (offset * 9));
+                    text(`Double tap the ship to switch orientation`, offset, pixel * rows + (offset * 9));
                 } else {
                     text(`Left click to select and retract, right click to switch orientation`, offset, pixel * rows + (offset * 6));
                 }
@@ -497,28 +499,47 @@ async function touchStarted(e) {
                         ships[index] = true;
                         shipOrientation[index] = (index == 4) ? 0 : 1;
                     }
-                } else if (gi != -1) {
+                    mX = mouseX, mY = mouseY;
+                } else if (gi != -1 && mX == mouseX && mY == mouseY) {
+                    mX = -1, mY = -1;
                     // switch orientation
                     if (tiles[gi % cols][Math.floor(gi / rows)].s != -1) {
                         currentShip = tiles[gi % cols][Math.floor(gi / rows)].s;
+
                         gi = shipsIndicies[currentShip][Math.floor(shipsIndicies[currentShip].length / 2)];
-                        var check = checkShips(gi, currentShip);
+                        shipOrientation[currentShip] = (shipOrientation[currentShip] + 1) % 2;
 
-                        if (check != -1 && updateShips(check, currentShip)) {
-
+                        var temp = [...shipsIndicies[currentShip]];
+                        for (let i = 0; i < shipsIndicies[currentShip].length; i++) {
+                            tiles[shipsIndicies[currentShip][i] % cols][Math.floor(shipsIndicies[currentShip][i] / rows)].s = -1;
+                            shipsIndicies[currentShip][i] = -1;
                         }
-                        shipOrientation[ship] = (shipOrientation[ship] + 1) % 2;
-
-                        for (let i = 0; i < shipsIndicies[ship].length; i++) {
-                            tiles[shipsIndicies[ship][i] % cols][Math.floor(shipsIndicies[ship][i] / rows)].s = -1;
-                            shipsIndicies[ship][i] = -1;
-                        }
-                        ships[index] = true;
 
                         var check = checkShips(gi, currentShip);
 
+                        if (!(check != -1 && updateShips(check, currentShip))) {
+                            shipOrientation[currentShip] = (shipOrientation[currentShip] + 1) % 2;
+                            console.log(temp);
+                            shipsIndicies[currentShip] = temp;
+                            console.log(shipsIndicies[currentShip]);
+                            for (let i = 0; i < shipsIndicies[currentShip].length; i++) {
+                                tiles[shipsIndicies[currentShip][i] % cols][Math.floor(shipsIndicies[currentShip][i] / rows)].s = currentShip;
+                            }
+                        }
 
+                        currentShip = -1;
                     }
+                } else if (tiles[gi % cols][Math.floor(gi / rows)].s != -1) {
+                    currentShip = tiles[gi % cols][Math.floor(gi / rows)].s;
+
+                    for (let i = 0; i < shipsIndicies[currentShip].length; i++) {
+                        tiles[shipsIndicies[currentShip][i] % cols][Math.floor(shipsIndicies[currentShip][i] / rows)].s = -1;
+                        shipsIndicies[currentShip][i] = -1;
+                    }
+
+                    mX = mouseX, mY = mouseY;
+                } else {
+                    mX = mouseX, mY = mouseY;
                 }
             }
         }
